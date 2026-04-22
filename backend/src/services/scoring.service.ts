@@ -1,18 +1,16 @@
-import { RARITY_POINTS } from '../types';
-
-export class ScoringService {
-  /**
-   * Get points for a stop based on its rarity
-   */
+class ScoringService {
   getStopPoints(rarity: string): number {
-    return RARITY_POINTS[rarity] || 10;
+    switch (rarity?.toLowerCase()) {
+      case 'legendary': return 100;
+      case 'rare':      return 50;
+      case 'uncommon':  return 25;
+      case 'common':
+      default:          return 10;
+    }
   }
 
-  /**
-   * Calculate bonus points for completing a route
-   */
-  getRouteBonusPoints(routeBonusPoints: number): number {
-    return routeBonusPoints || 100;
+  getRouteBonusPoints(baseBonus: number): number {
+    return baseBonus || 100;
   }
 }
 

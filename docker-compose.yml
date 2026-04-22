@@ -1,23 +1,24 @@
+version: '3.8'
+
 services:
   db:
-    image: postgis/postgis:14-3.4
-    container_name: lifemax-db
-    restart: unless-stopped
-    ports:
-      - '5433:5432'
+    image: postgis/postgis:15-3.3
+    container_name: loremaxxx_db
     environment:
       POSTGRES_DB: lifemax
-      POSTGRES_USER: lifemax
-      POSTGRES_PASSWORD: lifemax_dev_2024
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./backend/src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ./backend/src/db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./backend/src/db/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U lifemax -d lifemax']
+      test: ["CMD-SHELL", "pg_isready -U postgres -d lifemax"]
       interval: 5s
       timeout: 5s
       retries: 5
 
 volumes:
-  pgdata:
+  postgres_data:

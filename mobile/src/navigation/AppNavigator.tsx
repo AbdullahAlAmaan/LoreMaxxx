@@ -12,6 +12,7 @@ import RegisterScreen from '../screens/RegisterScreen';
 import MapScreen from '../screens/MapScreen';
 import RouteScreen from '../screens/RouteScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import LeaderboardScreen from '../screens/LeaderboardScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -114,6 +115,14 @@ function MainTabs() {
         options={{
           headerShown: false,
           tabBarIcon: ({ focused }) => <TabIcon emoji="🗺️" focused={focused} />,
+        }}
+      />
+      <Tab.Screen
+        name="Leaderboard"
+        component={LeaderboardScreen}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ focused }) => <TabIcon emoji="🏆" focused={focused} />,
         }}
       />
       <Tab.Screen

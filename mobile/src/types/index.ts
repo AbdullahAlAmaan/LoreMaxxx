@@ -87,6 +87,15 @@ export interface ProfileResponse {
   routeProgress: UserRouteProgress[];
 }
 
+export interface LeaderboardEntry {
+  id: number;
+  username: string;
+  total_points: number;
+  completed_routes: number;
+  stops_visited: number;
+  rank: number;
+}
+
 // Rarity color mapping
 export const RARITY_COLORS: Record<string, string> = {
   common: '#8B9DC3',

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Route, CheckinResponse, ProfileResponse, User } from '../types';
+import { Route, CheckinResponse, ProfileResponse, User, LeaderboardEntry } from '../types';
 
 // Set EXPO_PUBLIC_API_URL in your .env file:
 //   iOS simulator / web:   http://localhost:3001
@@ -92,6 +92,15 @@ export async function checkin(
 
 export async function getProfile(): Promise<ProfileResponse> {
   const response = await api.get('/profile');
+  return response.data;
+}
+
+// ============================================
+// Leaderboard API
+// ============================================
+
+export async function getLeaderboard(): Promise<{ leaderboard: LeaderboardEntry[] }> {
+  const response = await api.get('/leaderboard');
   return response.data;
 }
 

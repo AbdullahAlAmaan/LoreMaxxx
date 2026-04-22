@@ -4,7 +4,7 @@
   "description": "Lifemax travel app backend — Node.js + Express + TypeScript + PostGIS",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon",
+    "dev": "npm run build && nodemon",
     "build": "tsc",
     "start": "node dist/index.js",
     "db:schema": "psql -h localhost -p 5433 -U lifemax -d lifemax -f src/db/schema.sql",

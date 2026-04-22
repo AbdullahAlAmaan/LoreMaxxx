@@ -60,8 +60,8 @@ export class CheckinService {
         );
       }
 
-      // 5. Calculate points
-      const pointsEarned = scoringService.getStopPoints(stop.rarity);
+      // 5. Use points from DB — keeps UI display consistent with what's actually awarded
+      const pointsEarned = stop.points ?? scoringService.getStopPoints(stop.rarity);
 
       // 6. Create check-in record
       await client.query(

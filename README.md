@@ -57,6 +57,7 @@ npx expo start
 | GET | `/routes/:id` | Yes | Route detail + stops |
 | POST | `/checkin` | Yes | Check in at a stop |
 | GET | `/profile` | Yes | User profile + stats |
+| GET | `/leaderboard` | Yes | Top 50 users by points |
 
 ## Seed Data
 
