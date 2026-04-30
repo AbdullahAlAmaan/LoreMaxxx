@@ -25,7 +25,7 @@ MapboxGL.setAccessToken(mapboxToken);
 
 const { height, width } = Dimensions.get('window');
 
-const ROUTE_COLORS = ['#6C5CE7', '#00CEC9', '#FD79A8', '#FDCB6E', '#00B894', '#E17055'];
+const ROUTE_COLORS = ['#74B9FF', '#00CEC9', '#FD79A8', '#FDCB6E', '#00B894', '#E17055'];
 
 export default function MapScreen({ navigation }: any) {
   const { location, isLoading: locationLoading } = useLocation();
@@ -120,7 +120,7 @@ export default function MapScreen({ navigation }: any) {
   if (isLoading || locationLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6C5CE7" />
+        <ActivityIndicator size="large" color="#FFFFFF" />
         <Text style={styles.loadingText}>
           {locationLoading ? 'Getting your location...' : 'Loading routes...'}
         </Text>

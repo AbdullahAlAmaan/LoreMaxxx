@@ -25,7 +25,7 @@ export default function ProgressBar({ completed, total, height = 8, showLabel = 
       )}
       <View style={[styles.track, { height }]}>
         <LinearGradient
-          colors={progress >= 1 ? ['#27AE60', '#2ECC71'] : ['#6C5CE7', '#A29BFE']}
+          colors={progress >= 1 ? ['#27AE60', '#2ECC71'] : ['#FFFFFF', '#AAAAAA']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[
@@ -57,12 +57,12 @@ const styles = StyleSheet.create({
   },
   percentText: {
     fontSize: 13,
-    color: '#6C5CE7',
+    color: '#FFFFFF',
     fontWeight: '700',
   },
   track: {
     width: '100%',
-    backgroundColor: '#2A2D3A',
+    backgroundColor: '#222222',
     borderRadius: 100,
     overflow: 'hidden',
   },

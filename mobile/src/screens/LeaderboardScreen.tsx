@@ -11,18 +11,16 @@ import {
   UIManager,
   TouchableOpacity,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import { getLeaderboard } from '../services/api';
 import { LeaderboardEntry } from '../types';
 import { supabase } from '../services/supabase';
 
-// Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const RANK_COLORS = ['#F39C12', '#8B9DC3', '#CD7F32'];
+const RANK_COLORS = ['#F39C12', '#AAAAAA', '#CD7F32'];
 const RANK_MEDALS = ['🥇', '🥈', '🥉'];
 
 export default function LeaderboardScreen({ navigation }: any) {
@@ -34,14 +32,12 @@ export default function LeaderboardScreen({ navigation }: any) {
   useEffect(() => {
     load();
 
-    // Subscribe to realtime changes on the users table
     const channel = supabase
       .channel('leaderboard-updates')
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'users' },
         (payload) => {
-          // If total_points changed, reload leaderboard
           if (payload.old && payload.new && payload.old.total_points !== payload.new.total_points) {
             load(true);
           }
@@ -77,7 +73,7 @@ export default function LeaderboardScreen({ navigation }: any) {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#6C5CE7" />
+        <ActivityIndicator size="large" color="#FFFFFF" />
       </View>
     );
   }
@@ -85,11 +81,11 @@ export default function LeaderboardScreen({ navigation }: any) {
   const renderItem = ({ item }: { item: LeaderboardEntry }) => {
     const isMe = item.id === user?.id;
     const medal = item.rank <= 3 ? RANK_MEDALS[item.rank - 1] : null;
-    const rankColor = item.rank <= 3 ? RANK_COLORS[item.rank - 1] : '#5A5E6D';
+    const rankColor = item.rank <= 3 ? RANK_COLORS[item.rank - 1] : '#555555';
 
     return (
-      <TouchableOpacity 
-        style={[styles.row, isMe && styles.rowMe]} 
+      <TouchableOpacity
+        style={[styles.row, isMe && styles.rowMe]}
         activeOpacity={0.7}
         onPress={() => navigation.navigate('UserProfile', { userId: item.id })}
       >
@@ -116,19 +112,19 @@ export default function LeaderboardScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={['#1A1B2E', '#0F1123']} style={styles.header}>
+      <View style={styles.header}>
         <View style={styles.headerTop}>
           <Text style={styles.headerTitle}>Leaderboard</Text>
         </View>
         <Text style={styles.headerSub}>Top explorers by points</Text>
-      </LinearGradient>
+      </View>
       <FlatList
         data={entries}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#6C5CE7" />
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#FFFFFF" />
         }
         ListEmptyComponent={
           <View style={styles.center}>
@@ -141,12 +137,21 @@ export default function LeaderboardScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F1123' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0F1123', paddingTop: 60 },
+  container: { flex: 1, backgroundColor: '#000000' },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000000',
+    paddingTop: 60,
+  },
   header: {
     paddingTop: 60,
     paddingBottom: 24,
     paddingHorizontal: 24,
+    backgroundColor: '#000000',
+    borderBottomWidth: 1,
+    borderBottomColor: '#111111',
   },
   headerTop: {
     flexDirection: 'row',
@@ -154,22 +159,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: { fontSize: 28, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.5 },
-  headerSub: { fontSize: 14, color: '#8E99A4', marginTop: 4 },
+  headerSub: { fontSize: 14, color: '#666666', marginTop: 4 },
   list: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E2030',
+    backgroundColor: '#111111',
     borderRadius: 14,
     padding: 14,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#2A2D3A',
+    borderColor: '#222222',
     gap: 12,
   },
   rowMe: {
-    borderColor: '#6C5CE7',
-    backgroundColor: '#6C5CE711',
+    borderColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.04)',
   },
   rankBadge: {
     width: 44,
@@ -181,9 +186,9 @@ const styles = StyleSheet.create({
   rankText: { fontSize: 16, fontWeight: '800' },
   userInfo: { flex: 1 },
   username: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
-  usernameMe: { color: '#A29BFE' },
-  meta: { fontSize: 12, color: '#8E99A4', marginTop: 2 },
+  usernameMe: { color: '#FFFFFF' },
+  meta: { fontSize: 12, color: '#666666', marginTop: 2 },
   points: { fontSize: 14, fontWeight: '700', color: '#F39C12' },
-  chevron: { fontSize: 20, color: '#5A5E6D', marginLeft: 4, fontWeight: '600' },
-  emptyText: { color: '#8E99A4', fontSize: 16 },
+  chevron: { fontSize: 20, color: '#444444', marginLeft: 4, fontWeight: '600' },
+  emptyText: { color: '#666666', fontSize: 16 },
 });

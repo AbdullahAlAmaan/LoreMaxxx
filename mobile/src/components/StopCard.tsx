@@ -68,22 +68,22 @@ export default function StopCard({ stop, onCheckIn, isNearby = false, isCheckinL
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    backgroundColor: '#1E2030',
+    backgroundColor: '#111111',
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#2A2D3A',
+    borderColor: '#222222',
   },
   checkedIn: {
     borderColor: '#27AE6044',
-    backgroundColor: '#1E203099',
+    backgroundColor: '#11111199',
   },
   orderBadge: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#2A2D3A',
+    backgroundColor: '#222222',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -167,13 +167,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   checkinButton: {
-    backgroundColor: '#6C5CE7',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
   },
   checkinButtonText: {
-    color: '#FFFFFF',
+    color: '#000000',
     fontSize: 13,
     fontWeight: '700',
   },

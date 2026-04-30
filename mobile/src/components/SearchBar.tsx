@@ -133,7 +133,7 @@ export default function SearchBar({ onSelectResult, onClear, userLocation }: Sea
             autoCorrect={false}
             autoCapitalize="none"
           />
-          {isSearching && <ActivityIndicator size="small" color="#6C5CE7" style={styles.spinner} />}
+          {isSearching && <ActivityIndicator size="small" color="#FFFFFF" style={styles.spinner} />}
           {query.length > 0 && !isSearching && (
             <TouchableOpacity onPress={handleClear} style={styles.clearBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Text style={styles.clearText}>✕</Text>

@@ -37,7 +37,7 @@ export default function LoginScreen({ navigation }: any) {
   };
 
   return (
-    <LinearGradient colors={['#0F1123', '#1A1B2E', '#0F1123']} style={styles.container}>
+    <LinearGradient colors={['#000000', '#0A0A0A', '#000000']} style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -86,18 +86,13 @@ export default function LoginScreen({ navigation }: any) {
               disabled={isLoading}
               activeOpacity={0.8}
             >
-              <LinearGradient
-                colors={['#6C5CE7', '#A29BFE']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.buttonGradient}
-              >
+              <View style={styles.buttonInner}>
                 {isLoading ? (
-                  <ActivityIndicator color="#FFF" />
+                  <ActivityIndicator color="#000000" />
                 ) : (
                   <Text style={styles.buttonText}>Sign In</Text>
                 )}
-              </LinearGradient>
+              </View>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -135,12 +130,12 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#1E2030',
+    backgroundColor: '#111111',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-    borderWidth: 2,
-    borderColor: '#6C5CE7',
+    borderWidth: 1,
+    borderColor: '#333333',
   },
   logoEmoji: {
     fontSize: 36,
@@ -172,14 +167,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: '#1E2030',
+    backgroundColor: '#111111',
     borderRadius: 14,
     paddingHorizontal: 18,
     paddingVertical: 16,
     fontSize: 16,
     color: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#2A2D3A',
+    borderColor: '#222222',
   },
   button: {
     marginTop: 8,
@@ -189,13 +184,14 @@ const styles = StyleSheet.create({
   buttonDisabled: {
     opacity: 0.7,
   },
-  buttonGradient: {
+  buttonInner: {
+    backgroundColor: '#FFFFFF',
     paddingVertical: 18,
     alignItems: 'center',
     borderRadius: 14,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: '#000000',
     fontSize: 17,
     fontWeight: '700',
   },
@@ -208,7 +204,7 @@ const styles = StyleSheet.create({
     color: '#8E99A4',
   },
   linkBold: {
-    color: '#6C5CE7',
+    color: '#FFFFFF',
     fontWeight: '700',
   },
 });

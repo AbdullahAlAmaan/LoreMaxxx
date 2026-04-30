@@ -188,7 +188,7 @@ export default function RouteScreen({ route, navigation }: any) {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6C5CE7" />
+        <ActivityIndicator size="large" color="#FFFFFF" />
         <Text style={styles.loadingText}>Loading route...</Text>
       </View>
     );
@@ -206,7 +206,7 @@ export default function RouteScreen({ route, navigation }: any) {
   const totalStops = routeData.stops?.length || 0;
   const isCompleted = routeData.user_progress?.is_completed || false;
   const journeyStarted = !!routeData.user_progress?.started_at && !isCompleted;
-  const routeColor = ROUTE_COLORS[routeData.difficulty] || '#6C5CE7';
+  const routeColor = ROUTE_COLORS[routeData.difficulty] || '#FFFFFF';
   const stops = routeData.stops || [];
 
   const centerLng = stops.length ? stops.reduce((s, p) => s + p.longitude, 0) / stops.length : -79.3832;
@@ -304,10 +304,10 @@ export default function RouteScreen({ route, navigation }: any) {
 
         {/* Zoom Controls */}
         <View style={{ position: 'absolute', right: 16, top: 100, gap: 10 }}>
-          <NeonButton variant="solid" size="sm" neon={true} style={{ width: 44, height: 44, paddingHorizontal: 0, paddingVertical: 0, backgroundColor: '#1E2030', borderColor: '#2A2D3A', borderWidth: 1 }} onPress={handleZoomIn}>
+          <NeonButton variant="solid" size="sm" neon={true} style={{ width: 44, height: 44, paddingHorizontal: 0, paddingVertical: 0, backgroundColor: '#111111', borderColor: '#222222', borderWidth: 1 }} onPress={handleZoomIn}>
             <Text style={styles.zoomBtnText}>+</Text>
           </NeonButton>
-          <NeonButton variant="solid" size="sm" neon={true} style={{ width: 44, height: 44, paddingHorizontal: 0, paddingVertical: 0, backgroundColor: '#1E2030', borderColor: '#2A2D3A', borderWidth: 1 }} onPress={handleZoomOut}>
+          <NeonButton variant="solid" size="sm" neon={true} style={{ width: 44, height: 44, paddingHorizontal: 0, paddingVertical: 0, backgroundColor: '#111111', borderColor: '#222222', borderWidth: 1 }} onPress={handleZoomOut}>
             <Text style={styles.zoomBtnText}>−</Text>
           </NeonButton>
         </View>
@@ -342,8 +342,8 @@ export default function RouteScreen({ route, navigation }: any) {
             <View style={styles.statDivider} />
             <View style={styles.stat}>
               <View style={styles.statIconRow}>
-                <Gift size={14} color="#A29BFE" style={{ marginRight: 4 }} />
-                <Text style={[styles.statValue, { color: '#A29BFE' }]}>{routeData.bonus_points}</Text>
+                <Gift size={14} color="#DDDDDD" style={{ marginRight: 4 }} />
+                <Text style={[styles.statValue, { color: '#DDDDDD' }]}>{routeData.bonus_points}</Text>
               </View>
               <Text style={styles.statLabel}>BONUS</Text>
             </View>
@@ -367,7 +367,7 @@ export default function RouteScreen({ route, navigation }: any) {
               variant="solid"
               size="lg"
               neon={firstStopNearby}
-              style={[!firstStopNearby && { backgroundColor: '#2A2D3A', opacity: 0.8 }, { width: '90%', alignSelf: 'center' }]}
+              style={[!firstStopNearby && { backgroundColor: '#222222', opacity: 0.8 }, { width: '90%', alignSelf: 'center' }]}
               onPress={handleStartTrip}
               disabled={!firstStopNearby || loadingAction === 'start'}
             >
@@ -395,7 +395,7 @@ export default function RouteScreen({ route, navigation }: any) {
               variant="solid"
               size="lg"
               neon={lastStopNearby}
-              style={[!lastStopNearby && { backgroundColor: '#2A2D3A', opacity: 0.8 }, { width: '90%', alignSelf: 'center', backgroundColor: lastStopNearby ? '#27AE60' : undefined }]}
+              style={[!lastStopNearby && { backgroundColor: '#222222', opacity: 0.8 }, { width: '90%', alignSelf: 'center', backgroundColor: lastStopNearby ? '#27AE60' : undefined }]}
               onPress={handleFinishTrip}
               disabled={!lastStopNearby || loadingAction === 'finish'}
             >
@@ -432,7 +432,7 @@ export default function RouteScreen({ route, navigation }: any) {
                     <Text style={[styles.stopNumberText, checked && { color: '#fff' }]}>{checked ? '✓' : index + 1}</Text>
                   </View>
                   {index < stops.length - 1 && (
-                    <View style={[styles.connector, { backgroundColor: checked ? '#27AE60' : '#2A2D3A' }]} />
+                    <View style={[styles.connector, { backgroundColor: checked ? '#27AE60' : '#222222' }]} />
                   )}
                 </View>
 
@@ -552,10 +552,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     top: 100, // below difficulty overlay
-    backgroundColor: '#1E2030',
+    backgroundColor: '#111111',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#2A2D3A',
+    borderColor: '#222222',
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -568,7 +568,7 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(30, 32, 48, 0.9)',
+    backgroundColor: 'rgba(17, 17, 17, 0.9)',
   },
   zoomBtnText: {
     color: '#FFFFFF',
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
   },
   zoomDivider: {
     height: 1,
-    backgroundColor: '#2A2D3A',
+    backgroundColor: '#222222',
     width: '100%',
   },
 });

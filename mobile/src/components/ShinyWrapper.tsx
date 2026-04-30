@@ -15,7 +15,7 @@ export default function ShinyWrapper({
   style,
   borderRadius = 14,
   borderWidth = 1.5,
-  backgroundColor = '#1E2030', // inner background color
+  backgroundColor = '#111111',
 }: ShinyWrapperProps) {
   const spinValue = useRef(new Animated.Value(0)).current;
 
@@ -40,7 +40,7 @@ export default function ShinyWrapper({
       <View style={[styles.borderWrapper, { borderRadius }]}>
         <Animated.View style={[styles.shimmerBackground, { transform: [{ rotate: spin }] }]}>
           <LinearGradient
-            colors={['#1E2030', '#8484ff', '#1E2030', '#1E2030']}
+            colors={['#111111', '#FFFFFF', '#111111', '#111111']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={StyleSheet.absoluteFill}
