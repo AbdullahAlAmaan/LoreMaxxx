@@ -7,17 +7,23 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
 import { useLocation } from '../hooks/useLocation';
 import { getRoutes } from '../services/api';
-import { Route, RARITY_COLORS, DIFFICULTY_COLORS } from '../types';
+import { Route, DIFFICULTY_COLORS } from '../types';
+import { getTimeOfDayPreset } from '../utils/getTimeOfDayPreset';
+import SearchBar from '../components/SearchBar';
+import NeonButton from '../components/NeonButton';
+import ShinyWrapper from '../components/ShinyWrapper';
+import { Star, CheckCircle, ChevronRight } from 'lucide-react-native';
 
 // Set your Mapbox access token here or via env
 const mapboxToken = process.env.EXPO_PUBLIC_MAPBOX_TOKEN || 'YOUR_MAPBOX_TOKEN';
 MapboxGL.setAccessToken(mapboxToken);
 
-const { height } = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 
 const ROUTE_COLORS = ['#6C5CE7', '#00CEC9', '#FD79A8', '#FDCB6E', '#00B894', '#E17055'];
 
@@ -25,7 +31,10 @@ export default function MapScreen({ navigation }: any) {
   const { location, isLoading: locationLoading } = useLocation();
   const [routes, setRoutes] = useState<Route[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null);
   const cameraRef = useRef<MapboxGL.Camera>(null);
+  const mapRef = useRef<MapboxGL.MapView>(null);
+  const [currentZoom, setCurrentZoom] = useState(1);
 
   useEffect(() => {
     loadRoutes();
@@ -47,6 +56,67 @@ export default function MapScreen({ navigation }: any) {
     navigation.navigate('Route', { routeId: route.id, routeName: route.name });
   };
 
+  const handleRouteCardPress = (route: Route) => {
+    setSelectedRouteId(route.id);
+
+    // Fly to the route's bounding box
+    if (route.stops?.length) {
+      const coords = route.stops.map((s: any) => [s.longitude, s.latitude]);
+      const lngs = coords.map((c: number[]) => c[0]);
+      const lats = coords.map((c: number[]) => c[1]);
+      const padding = 80;
+
+      cameraRef.current?.fitBounds(
+        [Math.max(...lngs), Math.max(...lats)],
+        [Math.min(...lngs), Math.min(...lats)],
+        [padding, padding, padding, padding + 180], // extra bottom padding for cards
+        1200
+      );
+    }
+  };
+
+  const handleSearchResult = (coordinates: [number, number], _name: string) => {
+    setSelectedRouteId(null);
+    cameraRef.current?.setCamera({
+      centerCoordinate: coordinates,
+      zoomLevel: 14,
+      pitch: 45,
+      animationDuration: 2000,
+      animationMode: 'flyTo',
+    });
+  };
+
+  const handleSearchClear = () => {
+    setSelectedRouteId(null);
+    // Fly back to globe view
+    cameraRef.current?.setCamera({
+      centerCoordinate: [0, 20],
+      zoomLevel: 1,
+      pitch: 0,
+      animationDuration: 2000,
+      animationMode: 'flyTo',
+    });
+  };
+
+  const handleMapLoaded = () => {
+    // Apply light preset based on time of day
+    const preset = getTimeOfDayPreset();
+    try {
+      (mapRef.current as any)?.setMapStyleImportConfigValue?.('basemap', 'lightPreset', preset);
+    } catch (e) {
+      // Fallback — some versions may not support this method
+      console.log('lightPreset not supported, using default');
+    }
+  };
+
+  const handleZoomIn = () => {
+    cameraRef.current?.setCamera({ zoomLevel: currentZoom + 0.5, animationDuration: 800 });
+  };
+
+  const handleZoomOut = () => {
+    cameraRef.current?.setCamera({ zoomLevel: Math.max(1, currentZoom - 0.5), animationDuration: 800 });
+  };
+
   if (isLoading || locationLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -58,21 +128,29 @@ export default function MapScreen({ navigation }: any) {
     );
   }
 
-  const initialCenter = location
-    ? [location.longitude, location.latitude]
-    : [-79.3832, 43.6532]; // Default: Toronto
-
   return (
     <View style={styles.container}>
       <MapboxGL.MapView
+        ref={mapRef}
         style={styles.map}
-        styleURL="mapbox://styles/mapbox/dark-v11"
+        styleURL="mapbox://styles/mapbox/standard"
+        projection="globe"
         compassEnabled
+        scaleBarEnabled={false}
+        zoomEnabled={true}
+        scrollEnabled={true}
+        pitchEnabled={true}
+        rotateEnabled={true}
+        onDidFinishLoadingMap={handleMapLoaded}
+        onRegionDidChange={(e) => setCurrentZoom(e.properties.zoom)}
       >
         <MapboxGL.Camera
           ref={cameraRef}
-          centerCoordinate={initialCenter}
-          zoomLevel={12}
+          defaultSettings={{
+            centerCoordinate: [0, 20],
+            zoomLevel: 1,
+            pitch: 0,
+          }}
           animationMode="flyTo"
           animationDuration={2000}
         />
@@ -85,6 +163,7 @@ export default function MapScreen({ navigation }: any) {
           if (!route.polyline?.coordinates) return null;
 
           const lineColor = ROUTE_COLORS[index % ROUTE_COLORS.length];
+          const isSelected = selectedRouteId === route.id;
 
           return (
             <MapboxGL.ShapeSource
@@ -102,8 +181,8 @@ export default function MapScreen({ navigation }: any) {
                 id={`route-glow-${route.id}`}
                 style={{
                   lineColor: lineColor,
-                  lineWidth: 8,
-                  lineOpacity: 0.3,
+                  lineWidth: isSelected ? 12 : 8,
+                  lineOpacity: isSelected ? 0.4 : 0.2,
                   lineCap: 'round',
                   lineJoin: 'round',
                 }}
@@ -113,7 +192,7 @@ export default function MapScreen({ navigation }: any) {
                 id={`route-line-${route.id}`}
                 style={{
                   lineColor: lineColor,
-                  lineWidth: 3,
+                  lineWidth: isSelected ? 5 : 3,
                   lineOpacity: 0.9,
                   lineCap: 'round',
                   lineJoin: 'round',
@@ -123,7 +202,7 @@ export default function MapScreen({ navigation }: any) {
           );
         })}
 
-        {/* Stop Markers — placed at actual stop coordinates */}
+        {/* Stop Markers */}
         {routes.map((route, routeIndex) => {
           if (!route.stops?.length) return null;
           const markerColor = ROUTE_COLORS[routeIndex % ROUTE_COLORS.length];
@@ -133,51 +212,121 @@ export default function MapScreen({ navigation }: any) {
               key={`stop-${route.id}-${stop.id}`}
               id={`stop-${route.id}-${stop.id}`}
               coordinate={[stop.longitude, stop.latitude]}
-              onSelected={() => handleRoutePress(route)}
-            >
-              <View style={styles.markerContainer}>
-                <View style={[styles.marker, { borderColor: markerColor }]}>
-                  <View style={[styles.markerInner, { backgroundColor: markerColor }]} />
+              children={
+                <View collapsable={false}>
+                  <TouchableOpacity onPress={() => handleRoutePress(route)} activeOpacity={0.8}>
+                    <View style={styles.markerContainer}>
+                      <View style={[styles.marker, { borderColor: markerColor }]}>
+                        <View style={[styles.markerInner, { backgroundColor: markerColor }]} />
+                      </View>
+                    </View>
+                  </TouchableOpacity>
                 </View>
-              </View>
-            </MapboxGL.PointAnnotation>
+              }
+            />
           ));
         })}
       </MapboxGL.MapView>
+
+      {/* Search Bar Overlay */}
+      <SearchBar
+        onSelectResult={handleSearchResult}
+        onClear={handleSearchClear}
+        userLocation={location}
+      />
+
+      {/* Zoom Controls */}
+      <View style={{ position: 'absolute', right: 16, top: 180, gap: 10 }}>
+        <NeonButton variant="solid" size="sm" neon={true} style={{ width: 44, height: 44, paddingHorizontal: 0, paddingVertical: 0, backgroundColor: '#111111', borderColor: '#222222', borderWidth: 1 }} onPress={handleZoomIn}>
+          <Text style={styles.zoomBtnText}>+</Text>
+        </NeonButton>
+        <NeonButton variant="solid" size="sm" neon={true} style={{ width: 44, height: 44, paddingHorizontal: 0, paddingVertical: 0, backgroundColor: '#111111', borderColor: '#222222', borderWidth: 1 }} onPress={handleZoomOut}>
+          <Text style={styles.zoomBtnText}>−</Text>
+        </NeonButton>
+      </View>
 
       {/* Bottom Route Cards */}
       <View style={styles.bottomSheet}>
         <View style={styles.handle} />
         <Text style={styles.bottomTitle}>Nearby Routes</Text>
-        {routes.map((route, index) => (
-          <TouchableOpacity
-            key={route.id}
-            style={styles.routeCard}
-            onPress={() => handleRoutePress(route)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.routeColorBar, { backgroundColor: ROUTE_COLORS[index % ROUTE_COLORS.length] }]} />
-            <View style={styles.routeInfo}>
-              <Text style={styles.routeName} numberOfLines={1}>{route.name}</Text>
-              <View style={styles.routeMeta}>
-                <View style={[styles.difficultyBadge, { backgroundColor: DIFFICULTY_COLORS[route.difficulty] + '22' }]}>
-                  <Text style={[styles.difficultyText, { color: DIFFICULTY_COLORS[route.difficulty] }]}>
-                    {route.difficulty.toUpperCase()}
-                  </Text>
-                </View>
-                <Text style={styles.stopCount}>{route.stop_count} stops</Text>
-                <Text style={styles.routePoints}>⭐ {route.total_points} pts</Text>
-              </View>
-            </View>
-            {route.stops_completed !== undefined && route.stops_completed > 0 && (
-              <View style={styles.progressChip}>
-                <Text style={styles.progressChipText}>
-                  {route.is_completed ? '✅' : `${route.stops_completed}/${route.stop_count}`}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        ))}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={styles.routesList}
+          contentContainerStyle={styles.routesListContent}
+        >
+          {routes.map((route, index) => {
+            const isSelected = selectedRouteId === route.id;
+            return (
+              <TouchableOpacity
+                key={route.id}
+                style={{ marginBottom: 10 }}
+                onPress={() => handleRoutePress(route)}
+                onLongPress={() => handleRouteCardPress(route)}
+                activeOpacity={0.7}
+              >
+                <ShinyWrapper
+                  borderRadius={14}
+                  backgroundColor={isSelected ? 'rgba(255, 255, 255, 0.08)' : '#111111'}
+                  style={[styles.routeCardInner, isSelected && { borderColor: 'transparent' }]}
+                >
+                  <View style={styles.routeCardContent}>
+                    <View
+                      style={[
+                        styles.routeColorBar,
+                        { backgroundColor: ROUTE_COLORS[index % ROUTE_COLORS.length] },
+                      ]}
+                    />
+                    <View style={styles.routeInfo}>
+                      <Text style={styles.routeName} numberOfLines={1}>
+                        {route.name}
+                      </Text>
+                      <View style={styles.routeMeta}>
+                        <View
+                          style={[
+                            styles.difficultyBadge,
+                            {
+                              backgroundColor:
+                                DIFFICULTY_COLORS[route.difficulty] + '22',
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.difficultyText,
+                              { color: DIFFICULTY_COLORS[route.difficulty] },
+                            ]}
+                          >
+                            {route.difficulty.toUpperCase()}
+                          </Text>
+                        </View>
+                        <Text style={styles.stopCount}>{route.stop_count} stops</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Star size={12} color="#F39C12" style={{ marginRight: 4 }} />
+                          <Text style={styles.routePoints}>{route.total_points} pts</Text>
+                        </View>
+                      </View>
+                    </View>
+                    {route.stops_completed !== undefined && route.stops_completed > 0 && (
+                      <View style={styles.progressChip}>
+                        {route.is_completed ? (
+                          <CheckCircle size={14} color="#FFFFFF" />
+                        ) : (
+                          <Text style={styles.progressChipText}>
+                            {route.stops_completed}/{route.stop_count}
+                          </Text>
+                        )}
+                      </View>
+                    )}
+                    {/* Tap hint */}
+                    <View style={styles.tapHint}>
+                      <ChevronRight size={20} color="#5A5E6D" />
+                    </View>
+                  </View>
+                </ShinyWrapper>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
     </View>
   );
@@ -186,13 +335,13 @@ export default function MapScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F1123',
+    backgroundColor: '#000000',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F1123',
+    backgroundColor: '#000000',
   },
   loadingText: {
     color: '#8E99A4',
@@ -210,7 +359,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#1E2030',
+    backgroundColor: '#111111',
     borderWidth: 2.5,
     justifyContent: 'center',
     alignItems: 'center',
@@ -225,7 +374,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#1A1B2E',
+    backgroundColor: 'rgba(10, 10, 10, 0.95)',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -237,7 +386,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#2A2D3A',
+    backgroundColor: '#222222',
     alignSelf: 'center',
     marginBottom: 16,
   },
@@ -247,13 +396,18 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginBottom: 14,
   },
-  routeCard: {
+  routesList: {
+    flex: 1,
+  },
+  routesListContent: {
+    paddingBottom: 8,
+  },
+  routeCardInner: {
+    flex: 1,
+  },
+  routeCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E2030',
-    borderRadius: 14,
-    marginBottom: 10,
-    overflow: 'hidden',
   },
   routeColorBar: {
     width: 4,
@@ -297,15 +451,58 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   progressChip: {
-    marginRight: 14,
-    backgroundColor: '#6C5CE722',
+    marginRight: 8,
+    backgroundColor: 'rgba(255,255,255,0.1)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   progressChipText: {
     fontSize: 13,
-    color: '#6C5CE7',
+    color: '#FFFFFF',
     fontWeight: '700',
+  },
+  tapHint: {
+    marginRight: 14,
+  },
+  tapHintText: {
+    fontSize: 20,
+    color: '#5A5E6D',
+    fontWeight: '600',
+  },
+  zoomControls: {
+    position: 'absolute',
+    right: 16,
+    top: 180, // below search bar
+    backgroundColor: '#111111',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#222222',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  zoomBtn: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(17, 17, 17, 0.9)',
+  },
+  zoomBtnText: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: '500',
+    lineHeight: 28,
+  },
+  zoomDivider: {
+    height: 1,
+    backgroundColor: '#222222',
+    width: '100%',
   },
 });

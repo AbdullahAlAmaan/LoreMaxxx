@@ -12,6 +12,7 @@ import routeRoutes from './routes/routes';
 import checkinRoutes from './routes/checkin';
 import profileRoutes from './routes/profile';
 import leaderboardRoutes from './routes/leaderboard';
+import tripRoutes from './routes/trips';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -63,6 +64,7 @@ app.use('/routes', apiLimiter, routeRoutes);
 app.use('/checkin', apiLimiter, checkinRoutes);
 app.use('/profile', apiLimiter, profileRoutes);
 app.use('/leaderboard', apiLimiter, leaderboardRoutes);
+app.use('/trips', apiLimiter, tripRoutes);
 
 // 404 handler
 app.use((_req, res) => {

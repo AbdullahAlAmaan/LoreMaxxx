@@ -5,12 +5,12 @@ import pool from '../config/database';
 const router = Router();
 
 /**
- * GET /profile
+ * GET /profile/:userId?
  * Get user profile with stats, completed routes, and recent check-ins
  */
-router.get('/', authMiddleware, async (req: Request, res: Response) => {
+router.get('/:userId?', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const userId = req.user!.userId;
+    const userId = req.params.userId || req.user!.userId;
 
     // Get user info
     const userQuery = `

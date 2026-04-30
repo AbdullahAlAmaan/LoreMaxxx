@@ -6,16 +6,26 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+  TouchableOpacity,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import { getLeaderboard } from '../services/api';
 import { LeaderboardEntry } from '../types';
+import { supabase } from '../services/supabase';
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const RANK_COLORS = ['#F39C12', '#8B9DC3', '#CD7F32'];
 const RANK_MEDALS = ['🥇', '🥈', '🥉'];
 
-export default function LeaderboardScreen() {
+export default function LeaderboardScreen({ navigation }: any) {
   const { user } = useAuth();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,11 +33,33 @@ export default function LeaderboardScreen() {
 
   useEffect(() => {
     load();
+
+    // Subscribe to realtime changes on the users table
+    const channel = supabase
+      .channel('leaderboard-updates')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'users' },
+        (payload) => {
+          // If total_points changed, reload leaderboard
+          if (payload.old && payload.new && payload.old.total_points !== payload.new.total_points) {
+            load(true);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
-  const load = async () => {
+  const load = async (animate = false) => {
     try {
       const data = await getLeaderboard();
+      if (animate) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      }
       setEntries(data.leaderboard);
     } catch {
       // empty list shown on error
@@ -39,7 +71,7 @@ export default function LeaderboardScreen() {
 
   const onRefresh = useCallback(() => {
     setIsRefreshing(true);
-    load();
+    load(true);
   }, []);
 
   if (isLoading) {
@@ -56,7 +88,11 @@ export default function LeaderboardScreen() {
     const rankColor = item.rank <= 3 ? RANK_COLORS[item.rank - 1] : '#5A5E6D';
 
     return (
-      <View style={[styles.row, isMe && styles.rowMe]}>
+      <TouchableOpacity 
+        style={[styles.row, isMe && styles.rowMe]} 
+        activeOpacity={0.7}
+        onPress={() => navigation.navigate('UserProfile', { userId: item.id })}
+      >
         <View style={[styles.rankBadge, { backgroundColor: rankColor + '22' }]}>
           <Text style={[styles.rankText, { color: rankColor }]}>
             {medal ?? `#${item.rank}`}
@@ -73,14 +109,17 @@ export default function LeaderboardScreen() {
         <Text style={[styles.points, item.rank <= 3 && { color: rankColor }]}>
           ⭐ {item.total_points.toLocaleString()}
         </Text>
-      </View>
+        <Text style={styles.chevron}>›</Text>
+      </TouchableOpacity>
     );
   };
 
   return (
     <View style={styles.container}>
       <LinearGradient colors={['#1A1B2E', '#0F1123']} style={styles.header}>
-        <Text style={styles.headerTitle}>Leaderboard</Text>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerTitle}>Leaderboard</Text>
+        </View>
         <Text style={styles.headerSub}>Top explorers by points</Text>
       </LinearGradient>
       <FlatList
@@ -108,6 +147,11 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 24,
     paddingHorizontal: 24,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   headerTitle: { fontSize: 28, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.5 },
   headerSub: { fontSize: 14, color: '#8E99A4', marginTop: 4 },
@@ -140,5 +184,6 @@ const styles = StyleSheet.create({
   usernameMe: { color: '#A29BFE' },
   meta: { fontSize: 12, color: '#8E99A4', marginTop: 2 },
   points: { fontSize: 14, fontWeight: '700', color: '#F39C12' },
+  chevron: { fontSize: 20, color: '#5A5E6D', marginLeft: 4, fontWeight: '600' },
   emptyText: { color: '#8E99A4', fontSize: 16 },
 });

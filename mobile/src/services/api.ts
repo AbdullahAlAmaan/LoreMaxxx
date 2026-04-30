@@ -1,6 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Route, CheckinResponse, ProfileResponse, User, LeaderboardEntry } from '../types';
+import { Route, CheckinResponse, ProfileResponse, User, LeaderboardEntry, TripStartResponse, TripFinishResponse } from '../types';
 
 // Set EXPO_PUBLIC_API_URL in your .env file:
 //   iOS simulator / web:   http://localhost:3001
@@ -87,11 +87,34 @@ export async function checkin(
 }
 
 // ============================================
+// Trip API (Start / Finish with GPS validation)
+// ============================================
+
+export async function startTrip(
+  routeId: number,
+  latitude: number,
+  longitude: number
+): Promise<TripStartResponse> {
+  const response = await api.post('/trips/start', { routeId, latitude, longitude });
+  return response.data;
+}
+
+export async function finishTrip(
+  routeId: number,
+  latitude: number,
+  longitude: number
+): Promise<TripFinishResponse> {
+  const response = await api.post('/trips/finish', { routeId, latitude, longitude });
+  return response.data;
+}
+
+// ============================================
 // Profile API
 // ============================================
 
-export async function getProfile(): Promise<ProfileResponse> {
-  const response = await api.get('/profile');
+export async function getProfile(userId?: string): Promise<ProfileResponse> {
+  const url = userId ? `/profile/${userId}` : '/profile';
+  const response = await api.get(url);
   return response.data;
 }
 

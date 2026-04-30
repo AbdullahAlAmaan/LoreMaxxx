@@ -14,19 +14,22 @@ import { useAuth } from '../context/AuthContext';
 import { getProfile } from '../services/api';
 import { ProfileResponse, RARITY_COLORS, DIFFICULTY_COLORS } from '../types';
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ route }: any) {
   const { user, signOut } = useAuth();
+  const userId = route?.params?.userId;
+  const isCurrentUser = !userId || userId === user?.id;
+
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     loadProfile();
-  }, []);
+  }, [userId]);
 
   const loadProfile = async () => {
     try {
-      const data = await getProfile();
+      const data = await getProfile(userId);
       setProfile(data);
     } catch (err) {
       console.error('Failed to load profile:', err);
@@ -73,13 +76,13 @@ export default function ProfileScreen() {
               style={styles.avatar}
             >
               <Text style={styles.avatarText}>
-                {user?.username?.charAt(0).toUpperCase() || '?'}
+                {profile?.user?.username?.charAt(0).toUpperCase() || '?'}
               </Text>
             </LinearGradient>
           </View>
 
-          <Text style={styles.username}>{user?.username || 'Explorer'}</Text>
-          <Text style={styles.email}>{user?.email}</Text>
+          <Text style={styles.username}>{profile?.user?.username || 'Explorer'}</Text>
+          <Text style={styles.email}>{profile?.user?.email}</Text>
 
           {/* Points Display */}
           <View style={styles.pointsContainer}>
@@ -194,14 +197,16 @@ export default function ProfileScreen() {
           </View>
         )}
 
-        {/* Sign Out */}
-        <TouchableOpacity
-          style={styles.signOutButton}
-          onPress={handleSignOut}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
+        {/* Sign Out (Only for current user) */}
+        {isCurrentUser && (
+          <TouchableOpacity
+            style={styles.signOutButton}
+            onPress={handleSignOut}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </View>
   );

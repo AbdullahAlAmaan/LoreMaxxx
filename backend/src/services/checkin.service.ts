@@ -91,53 +91,34 @@ export class CheckinService {
       const completedResult = await client.query(completedStopsQuery, [userId, stop.route_id]);
       const stopsCompleted = completedResult.rows[0].completed;
 
-      const isRouteCompleted = stopsCompleted >= totalStops;
-      let bonusAwarded = false;
+      const allStopsVisited = stopsCompleted >= totalStops;
 
-      // Check completion state BEFORE upserting so we know if this is a new completion
-      const prevProgressResult = await client.query(
-        'SELECT is_completed FROM user_route_progress WHERE user_id = $1 AND route_id = $2',
-        [userId, stop.route_id]
-      );
-      const wasAlreadyCompleted = prevProgressResult.rows[0]?.is_completed ?? false;
-
+      // Upsert progress — note: is_completed is set when all stops are visited,
+      // but bonus points are NOT awarded here. They are awarded via POST /trips/finish
+      // which requires the user to be within 5 km of the last stop.
       await client.query(
         `INSERT INTO user_route_progress (user_id, route_id, stops_completed, total_stops, is_completed, completed_at)
-         VALUES ($1, $2, $3, $4, $5, CASE WHEN $5 THEN NOW() ELSE NULL END)
+         VALUES ($1, $2, $3, $4, false, NULL)
          ON CONFLICT (user_id, route_id)
          DO UPDATE SET
-           stops_completed = $3,
-           is_completed = $5,
-           completed_at = CASE WHEN $5 AND NOT user_route_progress.is_completed THEN NOW() ELSE user_route_progress.completed_at END`,
-        [userId, stop.route_id, stopsCompleted, totalStops, isRouteCompleted]
+           stops_completed = $3`,
+        [userId, stop.route_id, stopsCompleted, totalStops]
       );
 
-      // 9. Award route completion bonus only on first completion
-      if (isRouteCompleted && !wasAlreadyCompleted) {
-        const bonusPoints = scoringService.getRouteBonusPoints(stop.bonus_points);
-        await client.query(
-          'UPDATE users SET total_points = total_points + $1 WHERE id = $2',
-          [bonusPoints, userId]
-        );
-        bonusAwarded = true;
-      }
-
-      // 10. Get updated user total
+      // 9. Get updated user total
       const userResult = await client.query('SELECT total_points FROM users WHERE id = $1', [userId]);
       const totalPoints = userResult.rows[0].total_points;
 
       await client.query('COMMIT');
 
-      const totalPointsEarned = pointsEarned + (bonusAwarded ? stop.bonus_points : 0);
-
       return {
         success: true,
-        pointsEarned: totalPointsEarned,
+        pointsEarned,
         totalPoints,
         distance: Math.round(distance * 10) / 10,
-        routeCompleted: isRouteCompleted,
-        message: isRouteCompleted
-          ? `Check-in successful! +${pointsEarned} pts. Route completed! +${stop.bonus_points} bonus pts!`
+        routeCompleted: false, // Route completion is now handled by /trips/finish
+        message: allStopsVisited
+          ? `Check-in successful! +${pointsEarned} pts. All stops visited! Finish the trip to earn your bonus.`
           : `Check-in successful! +${pointsEarned} pts. (${stopsCompleted}/${totalStops} stops)`,
       };
     } catch (err) {

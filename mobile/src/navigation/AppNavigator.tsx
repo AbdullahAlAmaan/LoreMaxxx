@@ -3,8 +3,8 @@ import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { Map as MapIcon, Trophy, User as UserIcon } from 'lucide-react-native';
 
 // Screens
 import LoginScreen from '../screens/LoginScreen';
@@ -17,6 +17,7 @@ import LeaderboardScreen from '../screens/LeaderboardScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const MapStack = createNativeStackNavigator();
+const LeaderboardStack = createNativeStackNavigator();
 
 // Dark theme for navigation
 const DarkTheme = {
@@ -24,20 +25,20 @@ const DarkTheme = {
   dark: true,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#6C5CE7',
-    background: '#0F1123',
-    card: '#1A1B2E',
+    primary: '#FFFFFF',
+    background: '#000000',
+    card: '#111111',
     text: '#FFFFFF',
-    border: '#2A2D3A',
-    notification: '#6C5CE7',
+    border: '#222222',
+    notification: '#FFFFFF',
   },
 };
 
-// Tab bar icon component (emoji-based, no external icon lib needed)
-function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
+// Tab bar icon component
+function TabIcon({ Icon, focused }: { Icon: any; focused: boolean }) {
   return (
     <View style={[tabIconStyles.container, focused && tabIconStyles.focused]}>
-      <Text style={tabIconStyles.emoji}>{emoji}</Text>
+      <Icon color={focused ? '#FFFFFF' : '#8E99A4'} size={20} strokeWidth={focused ? 2.5 : 2} />
     </View>
   );
 }
@@ -51,10 +52,7 @@ const tabIconStyles = StyleSheet.create({
     alignItems: 'center',
   },
   focused: {
-    backgroundColor: '#6C5CE722',
-  },
-  emoji: {
-    fontSize: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
 });
 
@@ -62,8 +60,9 @@ const tabIconStyles = StyleSheet.create({
 function MapStackNavigator() {
   return (
     <MapStack.Navigator
+      id={undefined}
       screenOptions={{
-        headerStyle: { backgroundColor: '#1A1B2E' },
+        headerStyle: { backgroundColor: '#000000' },
         headerTintColor: '#FFFFFF',
         headerTitleStyle: { fontWeight: '700' },
         headerShadowVisible: false,
@@ -83,27 +82,54 @@ function MapStackNavigator() {
   );
 }
 
+// Leaderboard tab with nested stack for user profiles
+function LeaderboardStackNavigator() {
+  return (
+    <LeaderboardStack.Navigator
+      id={undefined}
+      screenOptions={{
+        headerStyle: { backgroundColor: '#000000' },
+        headerTintColor: '#FFFFFF',
+        headerTitleStyle: { fontWeight: '700' },
+        headerShadowVisible: false,
+      }}
+    >
+      <LeaderboardStack.Screen
+        name="LeaderboardMain"
+        component={LeaderboardScreen}
+        options={{ headerShown: false }}
+      />
+      <LeaderboardStack.Screen
+        name="UserProfile"
+        component={ProfileScreen}
+        options={{ title: 'User Profile' }}
+      />
+    </LeaderboardStack.Navigator>
+  );
+}
+
 // Main tab navigator (authenticated)
 function MainTabs() {
   return (
     <Tab.Navigator
+      id={undefined}
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: '#1A1B2E',
-          borderTopColor: '#2A2D3A',
+          backgroundColor: '#000000',
+          borderTopColor: '#222222',
           borderTopWidth: 1,
           paddingTop: 8,
           paddingBottom: 4,
           height: 88,
         },
-        tabBarActiveTintColor: '#6C5CE7',
+        tabBarActiveTintColor: '#FFFFFF',
         tabBarInactiveTintColor: '#5A5E6D',
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
           marginTop: 2,
         },
-        headerStyle: { backgroundColor: '#1A1B2E' },
+        headerStyle: { backgroundColor: '#000000' },
         headerTintColor: '#FFFFFF',
         headerTitleStyle: { fontWeight: '700' },
         headerShadowVisible: false,
@@ -114,15 +140,15 @@ function MainTabs() {
         component={MapStackNavigator}
         options={{
           headerShown: false,
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🗺️" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon Icon={MapIcon} focused={focused} />,
         }}
       />
       <Tab.Screen
         name="Leaderboard"
-        component={LeaderboardScreen}
+        component={LeaderboardStackNavigator}
         options={{
           headerShown: false,
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🏆" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon Icon={Trophy} focused={focused} />,
         }}
       />
       <Tab.Screen
@@ -130,7 +156,7 @@ function MainTabs() {
         component={ProfileScreen}
         options={{
           title: 'Profile',
-          tabBarIcon: ({ focused }) => <TabIcon emoji="👤" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon Icon={UserIcon} focused={focused} />,
         }}
       />
     </Tab.Navigator>
@@ -141,9 +167,10 @@ function MainTabs() {
 function AuthStack() {
   return (
     <Stack.Navigator
+      id={undefined}
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#0F1123' },
+        contentStyle: { backgroundColor: '#000000' },
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />
@@ -157,8 +184,8 @@ export default function AppNavigator() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0F1123' }}>
-        <ActivityIndicator size="large" color="#6C5CE7" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000' }}>
+        <ActivityIndicator size="large" color="#FFFFFF" />
       </View>
     );
   }

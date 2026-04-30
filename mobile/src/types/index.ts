@@ -64,6 +64,7 @@ export interface UserRouteProgress {
   total_stops: number;
   is_completed: boolean;
   completed_at: string | null;
+  started_at: string | null;
   route_name?: string;
   difficulty?: string;
 }
@@ -74,6 +75,20 @@ export interface CheckinResponse {
   totalPoints: number;
   distance: number;
   routeCompleted: boolean;
+  message: string;
+}
+
+export interface TripStartResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface TripFinishResponse {
+  success: boolean;
+  pointsAwarded: number;
+  stopPoints: number;
+  bonusPoints: number;
+  totalPoints: number;
   message: string;
 }
 
@@ -116,3 +131,4 @@ export const DIFFICULTY_COLORS: Record<string, string> = {
   medium: '#F39C12',
   hard: '#E74C3C',
 };
+
